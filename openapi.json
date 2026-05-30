@@ -1,0 +1,126 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "srvcs-or",
+    "description": "",
+    "license": {
+      "name": "Apache-2.0",
+      "identifier": "Apache-2.0"
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [],
+        "summary": "`GET /` — service identity (srvcs service standard).",
+        "operationId": "index",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [],
+        "summary": "`POST /` — compute `a || b`.",
+        "description": "Both operands must be JSON booleans; anything else is a client error. This\nis a self-contained leaf and performs no I/O.",
+        "operationId": "evaluate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvalRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "an operand is not a boolean"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EvalRequest": {
+        "type": "object",
+        "required": [
+          "a",
+          "b"
+        ],
+        "properties": {
+          "a": {
+            "type": "object",
+            "description": "The first operand. Must be a JSON boolean."
+          },
+          "b": {
+            "type": "object",
+            "description": "The second operand. Must be a JSON boolean."
+          }
+        }
+      },
+      "Info": {
+        "type": "object",
+        "required": [
+          "service",
+          "concern",
+          "depends_on"
+        ],
+        "properties": {
+          "concern": {
+            "type": "string"
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "service": {
+            "type": "string"
+          }
+        }
+      },
+      "OrResponse": {
+        "type": "object",
+        "required": [
+          "a",
+          "b",
+          "result"
+        ],
+        "properties": {
+          "a": {
+            "type": "object"
+          },
+          "b": {
+            "type": "object"
+          },
+          "result": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
