@@ -1,34 +1,48 @@
 # srvcs-or
 
-The boolean OR primitive of the srvcs.cloud distributed standard library.
+## Name
 
-Its single concern: **the boolean OR of two operands.** It is a *leaf* — it
-depends on no other service, computing `a || b` directly. Both operands must be
-JSON booleans; this lets logic services compose it without ambiguity.
+| Field | Value |
+| --- | --- |
+| Service | `srvcs-or` |
+| Slug | `or` |
+| Repository | `srvcs/or` |
+| Package | `srvcs-or` |
+| Kind | `leaf` |
+
+## Function
+
+logic: boolean OR
+
+## Dependencies
+
+None.
 
 ## API
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `GET` | `/` | Service identity, concern, and dependency list |
-| `POST` | `/` | Compute `a \|\| b` for two boolean operands |
-| `GET` | `/healthz` `/readyz` `/metrics` `/openapi.json` | srvcs service standard surface |
+| `GET` | `/` | Service identity |
+| `POST` | `/` | Evaluate the service function |
+| `GET` | `/healthz` | Liveness probe |
+| `GET` | `/readyz` | Readiness probe |
+| `GET` | `/metrics` | Prometheus metrics |
+| `GET` | `/openapi.json` | OpenAPI document |
 
-```sh
-curl -s -X POST localhost:8080/ -H 'content-type: application/json' -d '{"a": true, "b": false}'
-# {"a":true,"b":false,"result":true}
+## Inputs
 
-curl -s -X POST localhost:8080/ -H 'content-type: application/json' -d '{"a": false, "b": false}'
-# {"a":false,"b":false,"result":false}
-```
+| Name | Type | Required |
+| --- | --- | --- |
+| `a` | `json` | yes |
+| `b` | `json` | yes |
 
-`POST /` requires both `a` and `b` to be JSON booleans and returns their boolean
-OR. Any non-boolean operand (number, string, `null`, array, or object) is a
-client error and returns `422` with an `{"error": "..."}` body.
+## Outputs
 
-## Dependencies
-
-None. `srvcs-or` is a leaf.
+| Name | Type |
+| --- | --- |
+| `a` | `json` |
+| `b` | `json` |
+| `result` | `boolean` |
 
 ## Configuration
 
@@ -38,7 +52,13 @@ None. `srvcs-or` is a leaf.
 | `SRVCS_ENV` | `development` | Environment label for logs |
 | `RUST_LOG` | `info,tower_http=info` | Tracing filter |
 
-## Local checks
+## Error Behavior
+
+- `422` means the request could not be evaluated for the documented input shape.
+- `503` means a required dependency was unavailable or returned an unexpected response.
+- Dependency validation errors are forwarded when this service delegates validation.
+
+## Local Checks
 
 ```sh
 cargo fmt --check
@@ -46,9 +66,8 @@ cargo clippy --all-targets -- -D warnings
 cargo test
 ```
 
-The full Nix gates and OCI image build are documented in
-[`srvcs/platform`](https://github.com/srvcs/platform); CI runs them through the
-shared `build-service.yml` workflow.
+See the [srvcs service standard](https://github.com/srvcs/platform/blob/main/STANDARD.md) for the full operational contract.
 
-> Note: the `cargoHash` in `flake.nix` is inherited from the template and must be
-> refreshed with a `nix build` before the Nix gates pass.
+## Metadata
+
+Machine-readable service metadata lives in `srvcs.yaml`. Keep it aligned with this README when the service contract changes.
